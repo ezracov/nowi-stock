@@ -25,26 +25,36 @@
             <p id="stokDisplay" class="font-bold text-3xl">0</p>
         </div>
 
-        <div id="formMutasi" class="hidden space-y-4">
-            <hr>
-            <div>
-                <label class="block text-sm font-medium">Tipe Mutasi</label>
-                <select id="tipeMutasi" class="w-full border rounded-lg p-2 mt-1">
-                    <option value="Masuk">Barang Masuk (+)</option>
-                    <option value="Keluar">Barang Keluar (-)</option>
-                </select>
+            <div id="wrapperTombolAksi" class="hidden mb-4">
+                <button onclick="toggleForm()" id="btnToggleForm" class="w-full bg-indigo-50 text-indigo-600 font-semibold py-2 rounded-lg border border-indigo-200 hover:bg-indigo-100 transition">
+                    + Tambah Mutasi (Masuk/Keluar)
+                </button>
             </div>
-            <div>
-                <label class="block text-sm font-medium">Jumlah</label>
-                <input type="number" id="jumlahInput" class="w-full border rounded-lg p-2 mt-1" placeholder="0">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Keterangan</label>
-                <input type="text" id="keteranganInput" class="w-full border rounded-lg p-2 mt-1" placeholder="Contoh: Barang Rusak, Bonus, dll">
-            </div>
-            <button onclick="simpanMutasi()" id="btnSimpan" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">
-                Simpan Mutasi
-            </button>
+
+            <div id="formMutasi" class="hidden space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200 mb-6">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-gray-700">Input Mutasi Baru</h3>
+                    <button onclick="toggleForm()" class="text-gray-400 hover:text-red-500">✕</button>
+                </div>
+                <hr>
+                <div>
+                    <label class="block text-sm font-medium">Tipe Mutasi</label>
+                    <select id="tipeMutasi" class="w-full border rounded-lg p-2 mt-1">
+                        <option value="Masuk">Barang Masuk (+)</option>
+                        <option value="Keluar">Barang Keluar (-)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Jumlah</label>
+                    <input type="number" id="jumlahInput" class="w-full border rounded-lg p-2 mt-1" placeholder="0">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Keterangan</label>
+                    <input type="text" id="keteranganInput" class="w-full border rounded-lg p-2 mt-1" placeholder="Alasan mutasi...">
+                </div>
+                <button onclick="simpanMutasi()" id="btnSimpan" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 shadow-lg">
+                    Simpan Mutasi
+                </button>
         </div>
 
         <div id="sectionHistori" class="hidden mt-8">
@@ -75,11 +85,14 @@
                 const data = await res.json();
 
                 document.getElementById('infoBarang').classList.remove('hidden');
-                document.getElementById('formMutasi').classList.remove('hidden');
                 document.getElementById('sectionHistori').classList.remove('hidden');
+                document.getElementById('wrapperTombolAksi').classList.remove('hidden'); // Munculkan tombol utama
+                document.getElementById('formMutasi').classList.add('hidden'); // Pastikan form input tetap sembunyi dulu
                 
                 document.getElementById('namaDisplay').innerText = data.namaBarang;
                 document.getElementById('stokDisplay').innerText = data.stokAkhir;
+
+
 
                 const tabel = document.getElementById('tabelHistori');
                 tabel.innerHTML = "";
@@ -152,6 +165,23 @@
                 await cekStok();
             }
         };
+
+        function toggleForm() {
+            const form = document.getElementById('formMutasi');
+            const btnAksi = document.getElementById('btnToggleForm');
+            
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                btnAksi.innerText = "✕ Batalkan";
+                btnAksi.classList.replace('bg-indigo-50', 'bg-red-50');
+                btnAksi.classList.replace('text-indigo-600', 'text-red-600');
+            } else {
+                form.classList.add('hidden');
+                btnAksi.innerText = "+ Tambah Mutasi (Masuk/Keluar)";
+                btnAksi.classList.replace('bg-red-50', 'bg-indigo-50');
+                btnAksi.classList.replace('text-red-600', 'text-indigo-600');
+            }
+        }
     </script>
 </body>
 </html>
