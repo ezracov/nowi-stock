@@ -38,6 +38,10 @@
                 <label class="block text-sm font-medium">Jumlah</label>
                 <input type="number" id="jumlahInput" class="w-full border rounded-lg p-2 mt-1" placeholder="0">
             </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Keterangan</label>
+                <input type="text" id="keteranganInput" class="w-full border rounded-lg p-2 mt-1" placeholder="Contoh: Barang Rusak, Bonus, dll">
+            </div>
             <button onclick="simpanMutasi()" id="btnSimpan" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">
                 Simpan Mutasi
             </button>
@@ -46,15 +50,15 @@
                     <h3 class="font-bold text-gray-700 mb-2 underline">5 Transaksi Terakhir</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                                <tr>
-                                    <th class="py-2">Tipe</th>
-                                    <th class="py-2">Qty</th>
-                                    <th class="py-2">Waktu</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabelHistori">
-                                </tbody>
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="p-3 bg-gray-50">Tipe</th>
+                                <th class="p-3 bg-gray-50">Qty</th>
+                                <th class="p-3 bg-gray-50 text-right">Keterangan</th>
+                            </tr>
+                        </thead>
+            <tbody id="tabelHistori" class="divide-y"> 
+            </tbody>
                         </table>
                     </div>
                 </div>
@@ -86,13 +90,16 @@
     data.histori.forEach(item => {
         const tgl = new Date(item.timestamp).toLocaleDateString('id-ID');
         const warna = item.tipe === "Masuk" ? "text-green-600" : "text-red-600";
-        tabel.innerHTML += `
-            <tr class="border-b">
-                <td class="py-2 font-medium ${warna}">${item.tipe}</td>
-                <td class="py-2">${item.jumlah}</td>
-                <td class="py-2 text-xs text-gray-400">${tgl}</td>
-            </tr>
-        `;
+tabel.innerHTML += `
+    <tr class="hover:bg-gray-50">
+        <td class="p-3 font-medium ${warna}">${item.tipe}</td>
+        <td class="p-3 font-bold">${simbol}${item.jumlah}</td>
+        <td class="p-3 text-right">
+            <div class="text-[11px] font-medium text-gray-700">${item.keterangan}</div>
+            <div class="text-[9px] text-gray-400">${tgl}</div>
+        </td>
+    </tr>
+`;
     });
 }
 
@@ -104,6 +111,7 @@
                 tipe: document.getElementById('tipeMutasi').value,
                 jumlah: document.getElementById('jumlahInput').value,
                 user: "Admin Gudang"
+                keterangan: document.getElementById('keteranganInput').value || "-",
             };
 
             if(!payload.jumlah || payload.jumlah <= 0) return alert("Isi jumlah!");
