@@ -45,63 +45,65 @@
             <button onclick="simpanMutasi()" id="btnSimpan" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">
                 Simpan Mutasi
             </button>
+        </div>
 
-                <div id="sectionHistori" class="hidden mt-8">
-                    <h3 class="font-bold text-gray-700 mb-2 underline">5 Transaksi Terakhir</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
-                            <tr>
-                                <th class="p-3 bg-gray-50">Tipe</th>
-                                <th class="p-3 bg-gray-50">Qty</th>
-                                <th class="p-3 bg-gray-50 text-right">Keterangan</th>
-                            </tr>
-                        </thead>
-            <tbody id="tabelHistori" class="divide-y"> 
-            </tbody>
-                        </table>
-                    </div>
-                </div>
+        <div id="sectionHistori" class="hidden mt-8">
+            <h3 class="font-bold text-gray-700 mb-2 underline text-sm">Riwayat Mutasi</h3>
+            <div class="overflow-y-auto border rounded-lg" style="max-height: 300px;">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
+                        <tr>
+                            <th class="p-3 bg-gray-50">Tipe</th>
+                            <th class="p-3 bg-gray-50 text-right font-bold">Qty & Ket</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelHistori" class="divide-y"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
-        // GANTI DENGAN URL WEB APP KAMU TADI!
         const API_URL = "https://script.google.com/macros/s/AKfycbwf8BTTOc4RZV8qOu23M7TMDd1I6hc4ew_83BXN2b0iaxmWI3k7u_ec6tCWnUkmlb2U/exec";
 
         async function cekStok() {
-    const token = document.getElementById('tokenInput').value;
-    if(!token) return alert("Masukkan token!");
+            const token = document.getElementById('tokenInput').value;
+            if(!token) return alert("Masukkan token!");
 
-    const res = await fetch(`${API_URL}?token=${token}`);
-    const data = await res.json();
+            try {
+                const res = await fetch(`${API_URL}?token=${token}`);
+                const data = await res.json();
 
-    document.getElementById('infoBarang').classList.remove('hidden');
-    document.getElementById('formMutasi').classList.remove('hidden');
-    document.getElementById('sectionHistori').classList.remove('hidden'); // Munculkan histori
-    
-    document.getElementById('namaDisplay').innerText = data.namaBarang;
-    document.getElementById('stokDisplay').innerText = data.stokAkhir;
+                document.getElementById('infoBarang').classList.remove('hidden');
+                document.getElementById('formMutasi').classList.remove('hidden');
+                document.getElementById('sectionHistori').classList.remove('hidden');
+                
+                document.getElementById('namaDisplay').innerText = data.namaBarang;
+                document.getElementById('stokDisplay').innerText = data.stokAkhir;
 
-    // Render Tabel Histori
-    const tabel = document.getElementById('tabelHistori');
-    tabel.innerHTML = ""; // Kosongkan tabel dulu
-    
-    data.histori.forEach(item => {
-        const tgl = new Date(item.timestamp).toLocaleDateString('id-ID');
-        const warna = item.tipe === "Masuk" ? "text-green-600" : "text-red-600";
-tabel.innerHTML += `
-    <tr class="hover:bg-gray-50">
-        <td class="p-3 font-medium ${warna}">${item.tipe}</td>
-        <td class="p-3 font-bold">${simbol}${item.jumlah}</td>
-        <td class="p-3 text-right">
-            <div class="text-[11px] font-medium text-gray-700">${item.keterangan}</div>
-            <div class="text-[9px] text-gray-400">${tgl}</div>
-        </td>
-    </tr>
-`;
-    });
-}
+                const tabel = document.getElementById('tabelHistori');
+                tabel.innerHTML = "";
+                
+                data.histori.forEach(item => {
+                    const tgl = new Date(item.timestamp).toLocaleDateString('id-ID');
+                    const warna = item.tipe === "Masuk" ? "text-green-600" : "text-red-600";
+                    const simbol = item.tipe === "Masuk" ? "+" : "-"; // Fix: Definisi simbol
+                    
+                    tabel.innerHTML += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 font-medium ${warna}">${item.tipe}</td>
+                            <td class="p-3 text-right">
+                                <div class="font-bold text-gray-900">${simbol}${item.jumlah}</div>
+                                <div class="text-[10px] text-gray-500">${item.keterangan || '-'}</div>
+                                <div class="text-[9px] text-gray-400">${tgl}</div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                alert("Gagal mengambil data. Pastikan Apps Script sudah di-deploy sebagai 'Anyone'.");
+            }
+        }
 
         async function simpanMutasi() {
             const btn = document.getElementById('btnSimpan');
@@ -110,8 +112,8 @@ tabel.innerHTML += `
                 namaBarang: document.getElementById('namaDisplay').innerText,
                 tipe: document.getElementById('tipeMutasi').value,
                 jumlah: document.getElementById('jumlahInput').value,
-                user: "Admin Gudang"
-                keterangan: document.getElementById('keteranganInput').value || "-",
+                user: "Admin Gudang", // Tambahkan koma di sini
+                keterangan: document.getElementById('keteranganInput').value || "-"
             };
 
             if(!payload.jumlah || payload.jumlah <= 0) return alert("Isi jumlah!");
@@ -125,25 +127,22 @@ tabel.innerHTML += `
                     body: JSON.stringify(payload)
                 });
                 alert("Mutasi Berhasil Dicatat!");
-                location.reload(); // Refresh untuk update stok
+                location.reload(); 
             } catch (e) {
                 alert("Gagal simpan!");
                 btn.disabled = false;
+                btn.innerText = "Simpan Mutasi";
             }
         }
-        // Fungsi ini otomatis jalan saat halaman dibuka
-window.onload = async function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenDariUrl = urlParams.get('token'); // Mengambil ?token=XXX
 
-    if (tokenDariUrl) {
-        // Masukkan token ke input field
-        document.getElementById('tokenInput').value = tokenDariUrl;
-        // Jalankan fungsi cek stok secara otomatis
-        await cekStok();
-    }
-};
-        
+        window.onload = async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenDariUrl = urlParams.get('token');
+            if (tokenDariUrl) {
+                document.getElementById('tokenInput').value = tokenDariUrl;
+                await cekStok();
+            }
+        };
     </script>
 </body>
 </html>
