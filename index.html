@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Card App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">📦 Stock Card Gudang</h2>
+        
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700">Scan / Input Token</label>
+            <div class="flex gap-2 mt-1">
+                <input type="text" id="tokenInput" class="border rounded-lg p-2 flex-grow" placeholder="Contoh: ATK-001">
+                <button onclick="cekStok()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Cari</button>
+            </div>
+        </div>
+
+        <div id="infoBarang" class="hidden mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p class="text-sm text-blue-600">Nama Barang:</p>
+            <p id="namaDisplay" class="font-bold text-lg">-</p>
+            <p class="text-sm text-blue-600 mt-2">Stok Saat Ini:</p>
+            <p id="stokDisplay" class="font-bold text-3xl">0</p>
+        </div>
+
+        <div id="formMutasi" class="hidden space-y-4">
+            <hr>
+            <div>
+                <label class="block text-sm font-medium">Tipe Mutasi</label>
+                <select id="tipeMutasi" class="w-full border rounded-lg p-2 mt-1">
+                    <option value="Masuk">Barang Masuk (+)</option>
+                    <option value="Keluar">Barang Keluar (-)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium">Jumlah</label>
+                <input type="number" id="jumlahInput" class="w-full border rounded-lg p-2 mt-1" placeholder="0">
+            </div>
+            <button onclick="simpanMutasi()" id="btnSimpan" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">
+                Simpan Mutasi
+            </button>
+
+                <div id="sectionHistori" class="hidden mt-8">
+                    <h3 class="font-bold text-gray-700 mb-2 underline">5 Transaksi Terakhir</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th class="py-2">Tipe</th>
+                                    <th class="py-2">Qty</th>
+                                    <th class="py-2">Waktu</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelHistori">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // GANTI DENGAN URL WEB APP KAMU TADI!
+        const API_URL = "https://script.google.com/macros/s/AKfycbwf8BTTOc4RZV8qOu23M7TMDd1I6hc4ew_83BXN2b0iaxmWI3k7u_ec6tCWnUkmlb2U/exec";
+
+        async function cekStok() {
+    const token = document.getElementById('tokenInput').value;
+    if(!token) return alert("Masukkan token!");
+
+    const res = await fetch(`${API_URL}?token=${token}`);
+    const data = await res.json();
+
+    document.getElementById('infoBarang').classList.remove('hidden');
+    document.getElementById('formMutasi').classList.remove('hidden');
+    document.getElementById('sectionHistori').classList.remove('hidden'); // Munculkan histori
+    
+    document.getElementById('namaDisplay').innerText = data.namaBarang;
+    document.getElementById('stokDisplay').innerText = data.stokAkhir;
+
+    // Render Tabel Histori
+    const tabel = document.getElementById('tabelHistori');
+    tabel.innerHTML = ""; // Kosongkan tabel dulu
+    
+    data.histori.forEach(item => {
+        const tgl = new Date(item.timestamp).toLocaleDateString('id-ID');
+        const warna = item.tipe === "Masuk" ? "text-green-600" : "text-red-600";
+        tabel.innerHTML += `
+            <tr class="border-b">
+                <td class="py-2 font-medium ${warna}">${item.tipe}</td>
+                <td class="py-2">${item.jumlah}</td>
+                <td class="py-2 text-xs text-gray-400">${tgl}</td>
+            </tr>
+        `;
+    });
+}
+
+        async function simpanMutasi() {
+            const btn = document.getElementById('btnSimpan');
+            const payload = {
+                token: document.getElementById('tokenInput').value,
+                namaBarang: document.getElementById('namaDisplay').innerText,
+                tipe: document.getElementById('tipeMutasi').value,
+                jumlah: document.getElementById('jumlahInput').value,
+                user: "Admin Gudang"
+            };
+
+            if(!payload.jumlah || payload.jumlah <= 0) return alert("Isi jumlah!");
+
+            btn.disabled = true;
+            btn.innerText = "Menyimpan...";
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                alert("Mutasi Berhasil Dicatat!");
+                location.reload(); // Refresh untuk update stok
+            } catch (e) {
+                alert("Gagal simpan!");
+                btn.disabled = false;
+            }
+        }
+        // Fungsi ini otomatis jalan saat halaman dibuka
+window.onload = async function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenDariUrl = urlParams.get('token'); // Mengambil ?token=XXX
+
+    if (tokenDariUrl) {
+        // Masukkan token ke input field
+        document.getElementById('tokenInput').value = tokenDariUrl;
+        // Jalankan fungsi cek stok secara otomatis
+        await cekStok();
+    }
+};
+        
+    </script>
+</body>
+</html>
