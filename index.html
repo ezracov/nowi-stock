@@ -85,17 +85,26 @@
                 tabel.innerHTML = "";
                 
                 data.histori.forEach(item => {
-                    const tgl = new Date(item.timestamp).toLocaleDateString('id-ID');
+                    // Membuat format tanggal Indonesia yang lengkap & jelas
+                    const opsiTanggal = { 
+                        weekday: 'short', 
+                        day: '2-digit', 
+                        month: 'short', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    };
+                    const tgl = new Date(item.timestamp).toLocaleString('id-ID', opsiTanggal).replace('.', ':');
+                    
                     const warna = item.tipe === "Masuk" ? "text-green-600" : "text-red-600";
-                    const simbol = item.tipe === "Masuk" ? "+" : "-"; // Fix: Definisi simbol
+                    const simbol = item.tipe === "Masuk" ? "+" : "-";
                     
                     tabel.innerHTML += `
                         <tr class="hover:bg-gray-50">
                             <td class="p-3 font-medium ${warna}">${item.tipe}</td>
                             <td class="p-3 text-right">
                                 <div class="font-bold text-gray-900">${simbol}${item.jumlah}</div>
-                                <div class="text-[10px] text-gray-500">${item.keterangan || '-'}</div>
-                                <div class="text-[9px] text-gray-400">${tgl}</div>
+                                <div class="text-[11px] font-semibold text-gray-600">${item.keterangan || '-'}</div>
+                                <div class="text-[10px] text-gray-400 italic">${tgl} WIB</div>
                             </td>
                         </tr>
                     `;
